@@ -1,0 +1,21 @@
+name: static checks
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  check:
+      name: Ensure we can invoke docker commands
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: "docker info"
+          run: |
+            cd $GITHUB_WORKSPACE
+            ./create-dev-env.sh
