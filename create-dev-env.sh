@@ -47,9 +47,9 @@ fi
 NETWORK="gitops-net"
 POSTGRES_CONTAINER="managed-gitops-postgres"
 PGADMIN_CONTAINER="managed-gitops-pgadmin"
-RETRIES=5000                                          # in seconds
+RETRIES=30                                            # in seconds
 POSTGRES_DATA_DIR=$(mktemp -d -t postgres-XXXXXXXXXX) # Map the docker data directory into a temporary directory
-POSTGRES_SERVER_IS_UP="docker exec --user postgres -e PGPASSWORD=gitops -i \"$POSTGRES_CONTAINER\" \"psql\" -h localhost -d postgres -U postgres -p 5432 -c \"select 1\" >/dev/null 2>&1"
+POSTGRES_SERVER_IS_UP="docker exec --user postgres -e PGPASSWORD=gitops -i \"$POSTGRES_CONTAINER\" \"psql\" -h localhost -d postgres -U postgres -p 5432 -c \"select 1\" | grep '1 row' >/dev/null 2>&1"
 
 # Create docker network if one doesn't exist yet
 echo "* Creating docker network '$NETWORK'"
@@ -88,7 +88,7 @@ else
     -c log_min_duration_statement=0
 fi
 
-if ! docker ps | grep "$POSTGRES_CONTAINER" &> /dev/null; then
+if ! docker ps | grep "$POSTGRES_CONTAINER" >/dev/null 2>&1; then
   echo "Container '$POSTGRES_CONTAINER' is not running. Aborting ..."
   exit 1
 fi
@@ -108,7 +108,7 @@ else
     -d dpage/pgadmin4
 fi
 
-if ! docker ps | grep "$PGADMIN_CONTAINER" &> /dev/null; then
+if ! docker ps | grep "$PGADMIN_CONTAINER" >/dev/null 2>&1; then
   echo "Container '$PGADMIN_CONTAINER' is not running. Aborting ..."
 
   exit 1
@@ -122,7 +122,7 @@ echo
 
 echo "* Initializing DB"
 echo "  Copying db-schema.sql into the postgress container."
-if ! docker cp "$SCRIPTPATH/db-schema.sql" $POSTGRES_CONTAINER:/ &> /dev/null; then
+if ! docker cp "$SCRIPTPATH/db-schema.sql" $POSTGRES_CONTAINER:/ >/dev/null 2>&1; then
   echo "db-schema.sql cannot be copied into the '$POSTGRES_CONTAINER' container"
   exit 1
 fi
