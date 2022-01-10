@@ -53,7 +53,7 @@ POSTGRES_SERVER_IS_UP="docker exec --user postgres -e PGPASSWORD=gitops -i \"$PO
 
 # Create docker network if one doesn't exist yet
 echo "* Creating docker network '$NETWORK'"
-ID=$(docker network ls --filter "name=$NETWORK" -q)
+ID=$(docker network ls --filter "name=$NETWORK" -q 2> /dev/null)
 if [ "$(docker network inspect "$ID" -f '{{.Name}}')" == "$NETWORK" ]; then
   echo "  Skip creation: '$NETWORK' has already been created."
 else
@@ -61,7 +61,8 @@ else
 fi
 
 # TEST IT
-if ! docker network ls | grep "$NETWORK"; then
+if ! docker network ls | grep "$NETWORK" &> /dev/null; then
+  echo "Error: Docker network $NETWORK cannot be created. Aborting ..."
   exit 1
 fi
 
@@ -87,7 +88,8 @@ else
     -c log_min_duration_statement=0
 fi
 
-if ! docker ps | grep "$POSTGRES_CONTAINER"; then
+if ! docker ps | grep "$POSTGRES_CONTAINER" &> /dev/null; then
+  echo "Container '$POSTGRES_CONTAINER' is not running. Aborting ..."
   exit 1
 fi
 
@@ -106,7 +108,9 @@ else
     -d dpage/pgadmin4
 fi
 
-if ! docker ps | grep "$PGADMIN_CONTAINER"; then
+if ! docker ps | grep "$PGADMIN_CONTAINER" &> /dev/null; then
+  echo "Container '$PGADMIN_CONTAINER' is not running. Aborting ..."
+
   exit 1
 fi
 
@@ -117,7 +121,9 @@ echo "  Done"
 echo
 
 echo "* Initializing DB"
-if ! docker cp "$SCRIPTPATH/db-schema.sql" $POSTGRES_CONTAINER:/; then
+echo "  Copying db-schema.sql into the postgress container."
+if ! docker cp "$SCRIPTPATH/db-schema.sql" $POSTGRES_CONTAINER:/ &> /dev/null; then
+  echo "db-schema.sql cannot be copied into the '$POSTGRES_CONTAINER' container"
   exit 1
 fi
 docker exec \
