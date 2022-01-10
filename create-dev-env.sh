@@ -49,7 +49,7 @@ POSTGRES_CONTAINER="managed-gitops-postgres"
 PGADMIN_CONTAINER="managed-gitops-pgadmin"
 RETRIES=60                                          # in seconds
 POSTGRES_DATA_DIR=$(mktemp -d -t postgres-XXXXXXXXXX) # Map the docker data directory into a temporary directory
-POSTGRES_SERVER_IS_UP="docker exec -e PGPASSWORD=gitops -it \"$POSTGRES_CONTAINER\" \"psql\" -h localhost -d postgres -U postgres -p 5432 -c \"select 1\""
+POSTGRES_SERVER_IS_UP="docker exec -e PGPASSWORD=gitops -i \"$POSTGRES_CONTAINER\" \"psql\" -h localhost -d postgres -U postgres -p 5432 -c \"select 1\""
 
 # Create docker network if one doesn't exist yet
 echo "* Creating $NETWORK docker network"
@@ -106,7 +106,7 @@ docker ps
 
 echo
 echo "* Waiting $RETRIES seconds until postgress server is up..."
-if docker exec -e PGPASSWORD=gitops -it "$POSTGRES_CONTAINER" "psql" -h localhost -d postgres -U postgres -p 5432 -c "select 1"; then
+if docker exec -e PGPASSWORD=gitops -i "$POSTGRES_CONTAINER" "psql" -h localhost -d postgres -U postgres -p 5432 -c "select 1"; then
   echo "Works"
 else
   echo "Does not work"
