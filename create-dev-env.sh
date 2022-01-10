@@ -106,6 +106,13 @@ docker ps
 
 echo
 echo "* Waiting $RETRIES seconds until postgress server is up..."
+if docker exec -e PGPASSWORD=gitops -it "$POSTGRES_CONTAINER" "psql" -h localhost -d postgres -U postgres -p 5432 -c "select 1"; then
+  echo "Works"
+else
+  echo "Does not work"
+  exit 1
+fi
+
 wait-until "$POSTGRES_SERVER_IS_UP" "${RETRIES}"
 echo "  Done"
 echo
